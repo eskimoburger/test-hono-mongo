@@ -18,13 +18,13 @@ Write-Host ""
 
 # --- Type Works ---
 Write-Host "=== 3. Create Type Works ==="
-$tw1 = Invoke-RestMethod -Uri "$BASE_URL/type-works" -Method Post -ContentType "application/json; charset=utf-8" `
-  -Body ([System.Text.Encoding]::UTF8.GetBytes('{"name_tw": "นามบัตร"}'))
+$tw1 = Invoke-RestMethod -Uri "$BASE_URL/type-works" -Method Post -ContentType "application/json" `
+  -Body '{"name_tw": "Business Card"}'
 $tw1 | ConvertTo-Json
 $tw1Id = $tw1._id
 
-$tw2 = Invoke-RestMethod -Uri "$BASE_URL/type-works" -Method Post -ContentType "application/json; charset=utf-8" `
-  -Body ([System.Text.Encoding]::UTF8.GetBytes('{"name_tw": "โบรชัวร์"}'))
+$tw2 = Invoke-RestMethod -Uri "$BASE_URL/type-works" -Method Post -ContentType "application/json" `
+  -Body '{"name_tw": "Brochure"}'
 $tw2 | ConvertTo-Json
 Write-Host ""
 
@@ -39,13 +39,13 @@ Write-Host ""
 
 # --- Companies ---
 Write-Host "=== 5. Create Companies ==="
-$comp1 = Invoke-RestMethod -Uri "$BASE_URL/companies" -Method Post -ContentType "application/json; charset=utf-8" `
-  -Body ([System.Text.Encoding]::UTF8.GetBytes('{"company": "บริษัท เอบีซี จำกัด", "tax": "0105561234567", "count": 0}'))
+$comp1 = Invoke-RestMethod -Uri "$BASE_URL/companies" -Method Post -ContentType "application/json" `
+  -Body '{"company": "ABC Co., Ltd.", "tax": "0105561234567", "count": 0}'
 $comp1 | ConvertTo-Json
 $comp1Id = $comp1._id
 
-Invoke-RestMethod -Uri "$BASE_URL/companies" -Method Post -ContentType "application/json; charset=utf-8" `
-  -Body ([System.Text.Encoding]::UTF8.GetBytes('{"company": "ร้านค้า XYZ", "tax": null, "count": 0}')) | ConvertTo-Json
+Invoke-RestMethod -Uri "$BASE_URL/companies" -Method Post -ContentType "application/json" `
+  -Body '{"company": "XYZ Shop", "tax": null, "count": 0}' | ConvertTo-Json
 Write-Host ""
 
 # --- Admins ---
@@ -61,20 +61,19 @@ Write-Host ""
 Write-Host "=== 7. Create Orders ==="
 $orderBody = @{
   id_company    = $comp1Id
-  customer_name = "สมชาย ใจดี"
+  customer_name = "Somchai Jaidee"
   phone         = "0812345678"
   email         = "somchai@email.com"
   line          = "somchai_line"
-  address       = "123 ถ.สุขุมวิท กรุงเทพฯ"
+  address       = "123 Sukhumvit Rd, Bangkok"
   start_date    = "2026-02-16"
   end_date      = "2026-02-20"
   type_work     = $tw1Id
   count_work    = 500
-  detail_work   = "นามบัตร 2 หน้า พิมพ์สี CMYK"
+  detail_work   = "Business Card 2 sides CMYK"
   file          = "namecard_somchai.pdf"
 } | ConvertTo-Json
-$order1 = Invoke-RestMethod -Uri "$BASE_URL/orders" -Method Post -ContentType "application/json; charset=utf-8" `
-  -Body ([System.Text.Encoding]::UTF8.GetBytes($orderBody))
+$order1 = Invoke-RestMethod -Uri "$BASE_URL/orders" -Method Post -ContentType "application/json" -Body $orderBody
 $order1 | ConvertTo-Json
 $order1Id = $order1._id
 Write-Host ""
@@ -106,8 +105,8 @@ Write-Host ""
 
 # --- Update test ---
 Write-Host "=== 14. Update Order ==="
-Invoke-RestMethod -Uri "$BASE_URL/orders/$order1Id" -Method Put -ContentType "application/json; charset=utf-8" `
-  -Body ([System.Text.Encoding]::UTF8.GetBytes('{"count_work": 1000, "detail_work": "นามบัตร 2 หน้า พิมพ์สี CMYK จำนวน 1000 ใบ"}')) | ConvertTo-Json
+Invoke-RestMethod -Uri "$BASE_URL/orders/$order1Id" -Method Put -ContentType "application/json" `
+  -Body '{"count_work": 1000, "detail_work": "Business Card 2 sides CMYK 1000 pcs"}' | ConvertTo-Json
 Write-Host ""
 
 Write-Host "=== 15. Verify Updated Order ==="
