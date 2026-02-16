@@ -1,99 +1,25 @@
 import { Hono } from "hono";
-import { ObjectId } from "mongodb";
-import { connectDB } from "./db";
+import companies from "./routes/companies";
+import admins from "./routes/admins";
+import orders from "./routes/orders";
+import printers from "./routes/printers";
+import colors from "./routes/colors";
+import typeWorks from "./routes/typeWorks";
 
 const app = new Hono();
 
-// Connect to MongoDB on startup
-const db = await connectDB();
-const posts = db.collection("posts");
-
 // Health check
 app.get("/", (c) => {
-  return c.json({ message: "Hono + MongoDB API" });
+  return c.json({ message: "Five-Four API" });
 });
 
-// GET all posts
-app.get("/posts", async (c) => {
-  const allPosts = await posts.find().toArray();
-  return c.json(allPosts);
-});
-
-// GET single post
-app.get("/posts/:id", async (c) => {
-  const id = c.req.param("id");
-
-  if (!ObjectId.isValid(id)) {
-    return c.json({ error: "Invalid ID" }, 400);
-  }
-
-  const post = await posts.findOne({ _id: new ObjectId(id) });
-
-  if (!post) {
-    return c.json({ error: "Post not found" }, 404);
-  }
-
-  return c.json(post);
-});
-
-// CREATE post
-app.post("/posts", async (c) => {
-  const body = await c.req.json();
-  const { title, content } = body;
-
-  if (!title || !content) {
-    return c.json({ error: "title and content are required" }, 400);
-  }
-
-  const result = await posts.insertOne({
-    title,
-    content,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  });
-
-  return c.json({ _id: result.insertedId, title, content }, 201);
-});
-
-// UPDATE post
-app.put("/posts/:id", async (c) => {
-  const id = c.req.param("id");
-
-  if (!ObjectId.isValid(id)) {
-    return c.json({ error: "Invalid ID" }, 400);
-  }
-
-  const body = await c.req.json();
-  const { title, content } = body;
-
-  const result = await posts.updateOne(
-    { _id: new ObjectId(id) },
-    { $set: { title, content, updatedAt: new Date() } }
-  );
-
-  if (result.matchedCount === 0) {
-    return c.json({ error: "Post not found" }, 404);
-  }
-
-  return c.json({ message: "Post updated" });
-});
-
-// DELETE post
-app.delete("/posts/:id", async (c) => {
-  const id = c.req.param("id");
-
-  if (!ObjectId.isValid(id)) {
-    return c.json({ error: "Invalid ID" }, 400);
-  }
-
-  const result = await posts.deleteOne({ _id: new ObjectId(id) });
-
-  if (result.deletedCount === 0) {
-    return c.json({ error: "Post not found" }, 404);
-  }
-
-  return c.json({ message: "Post deleted" });
-});
+// Routes
+app.route("/companies", companies);
+app.route("/admins", admins);
+app.route("/orders", orders);
+app.route("/printers", printers);
+app.route("/colors", colors);
+app.route("/type-works", typeWorks);
 
 export default {
   port: 8080,

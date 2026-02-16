@@ -2,19 +2,23 @@
 
 BASE_URL="http://localhost:8080"
 
-echo "=== 1. All Posts Before Delete ==="
-curl -s $BASE_URL/posts | jq .
+echo "=== Deleting all data ==="
 echo ""
 
-echo "=== 2. Deleting All Posts ==="
-for POST_ID in $(curl -s $BASE_URL/posts | jq -r '.[]._id'); do
-  echo "Deleting $POST_ID ..."
-  curl -s -X DELETE $BASE_URL/posts/$POST_ID | jq .
+for collection in orders companies admins printers colors type-works; do
+  echo "--- Deleting all $collection ---"
+  for ID in $(curl -s $BASE_URL/$collection | jq -r '.[]._id'); do
+    echo "  Deleting $ID ..."
+    curl -s -X DELETE $BASE_URL/$collection/$ID | jq .
+  done
+  echo ""
 done
-echo ""
 
-echo "=== 3. Verify All Deleted (should be empty) ==="
-curl -s $BASE_URL/posts | jq .
+echo "=== Verify all empty ==="
+for collection in orders companies admins printers colors type-works; do
+  echo "--- $collection ---"
+  curl -s $BASE_URL/$collection | jq .
+done
 echo ""
 
 echo "=== Done! ==="
