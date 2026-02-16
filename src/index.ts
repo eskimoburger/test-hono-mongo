@@ -1,5 +1,6 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { swaggerUI } from "@hono/swagger-ui";
+import { cors } from "hono/cors";
 import { jwt } from "hono/jwt";
 import auth from "./routes/auth";
 import companies from "./routes/companies";
@@ -12,6 +13,9 @@ import typeWorks from "./routes/typeWorks";
 const JWT_SECRET = process.env.JWT_SECRET || "five-four-secret";
 
 const app = new OpenAPIHono();
+
+// Allow all origins
+app.use("*", cors());
 
 // Health check
 app.get("/", (c) => {
