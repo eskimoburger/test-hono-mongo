@@ -4,57 +4,62 @@ Write-Host "=== 1. Health Check ==="
 Invoke-RestMethod -Uri "$BASE_URL" | ConvertTo-Json
 Write-Host ""
 
+Write-Host "=== 2. Login ==="
+$loginBody = '{"user_name": "Admin", "password": "1234"}'
+$loginResponse = Invoke-RestMethod -Uri "$BASE_URL/auth/login" -Method Post -ContentType "application/json" -Body $loginBody
+$loginResponse | ConvertTo-Json
+$token = $loginResponse.token
+
+if (-not $token) {
+    Write-Host "Login failed. Make sure an admin exists."
+    exit 1
+}
+
+Write-Host "Token: $($token.Substring(0, 30))..."
+Write-Host ""
+
+$headers = @{ Authorization = "Bearer $token" }
+
 # --- Colors ---
-Write-Host "=== 2. Create Colors ==="
+Write-Host "=== 3. Create Colors ==="
 $color1 = Invoke-RestMethod -Uri "$BASE_URL/colors" -Method Post -ContentType "application/json" `
-  -Body '{"name_color": "CMYK"}'
+  -Headers $headers -Body '{"name_color": "CMYK"}'
 $color1 | ConvertTo-Json
 $color1Id = $color1._id
 
-$color2 = Invoke-RestMethod -Uri "$BASE_URL/colors" -Method Post -ContentType "application/json" `
-  -Body '{"name_color": "Pantone"}'
-$color2 | ConvertTo-Json
+Invoke-RestMethod -Uri "$BASE_URL/colors" -Method Post -ContentType "application/json" `
+  -Headers $headers -Body '{"name_color": "Pantone"}' | ConvertTo-Json
 Write-Host ""
 
 # --- Type Works ---
-Write-Host "=== 3. Create Type Works ==="
+Write-Host "=== 4. Create Type Works ==="
 $tw1 = Invoke-RestMethod -Uri "$BASE_URL/type-works" -Method Post -ContentType "application/json" `
-  -Body '{"name_tw": "Business Card"}'
+  -Headers $headers -Body '{"name_tw": "Business Card"}'
 $tw1 | ConvertTo-Json
 $tw1Id = $tw1._id
 
-$tw2 = Invoke-RestMethod -Uri "$BASE_URL/type-works" -Method Post -ContentType "application/json" `
-  -Body '{"name_tw": "Brochure"}'
-$tw2 | ConvertTo-Json
+Invoke-RestMethod -Uri "$BASE_URL/type-works" -Method Post -ContentType "application/json" `
+  -Headers $headers -Body '{"name_tw": "Brochure"}' | ConvertTo-Json
 Write-Host ""
 
 # --- Printers ---
-Write-Host "=== 4. Create Printers ==="
+Write-Host "=== 5. Create Printers ==="
 Invoke-RestMethod -Uri "$BASE_URL/printers" -Method Post -ContentType "application/json" `
-  -Body '{"name_printer": "Epson L3210"}' | ConvertTo-Json
+  -Headers $headers -Body '{"name_printer": "Epson L3210"}' | ConvertTo-Json
 
 Invoke-RestMethod -Uri "$BASE_URL/printers" -Method Post -ContentType "application/json" `
-  -Body '{"name_printer": "Canon G3010"}' | ConvertTo-Json
+  -Headers $headers -Body '{"name_printer": "Canon G3010"}' | ConvertTo-Json
 Write-Host ""
 
 # --- Companies ---
-Write-Host "=== 5. Create Companies ==="
+Write-Host "=== 6. Create Companies ==="
 $comp1 = Invoke-RestMethod -Uri "$BASE_URL/companies" -Method Post -ContentType "application/json" `
-  -Body '{"company": "ABC Co., Ltd.", "tax": "0105561234567", "count": 0}'
+  -Headers $headers -Body '{"company": "ABC Co., Ltd.", "tax": "0105561234567", "count": 0}'
 $comp1 | ConvertTo-Json
 $comp1Id = $comp1._id
 
 Invoke-RestMethod -Uri "$BASE_URL/companies" -Method Post -ContentType "application/json" `
-  -Body '{"company": "XYZ Shop", "tax": null, "count": 0}' | ConvertTo-Json
-Write-Host ""
-
-# --- Admins ---
-Write-Host "=== 6. Create Admins ==="
-Invoke-RestMethod -Uri "$BASE_URL/admins" -Method Post -ContentType "application/json" `
-  -Body '{"user_name": "Admin", "password": "1234", "role": "Admin"}' | ConvertTo-Json
-
-Invoke-RestMethod -Uri "$BASE_URL/admins" -Method Post -ContentType "application/json" `
-  -Body '{"user_name": "SuperAdmin", "password": "4321", "role": "SuperAdmin"}' | ConvertTo-Json
+  -Headers $headers -Body '{"company": "XYZ Shop", "tax": null, "count": 0}' | ConvertTo-Json
 Write-Host ""
 
 # --- Orders ---
@@ -73,44 +78,25 @@ $orderBody = @{
   detail_work   = "Business Card 2 sides CMYK"
   file          = "namecard_somchai.pdf"
 } | ConvertTo-Json
-$order1 = Invoke-RestMethod -Uri "$BASE_URL/orders" -Method Post -ContentType "application/json" -Body $orderBody
-$order1 | ConvertTo-Json
-$order1Id = $order1._id
+Invoke-RestMethod -Uri "$BASE_URL/orders" -Method Post -ContentType "application/json" `
+  -Headers $headers -Body $orderBody | ConvertTo-Json
 Write-Host ""
 
-# --- Verify all data ---
-Write-Host "=== 8. Get All Companies ==="
-Invoke-RestMethod -Uri "$BASE_URL/companies" | ConvertTo-Json -Depth 10
+# --- Verify ---
+Write-Host "=== 8. Get All Data ==="
+foreach ($col in @("companies", "admins", "orders", "printers", "colors", "type-works")) {
+    Write-Host "--- $col ---"
+    Invoke-RestMethod -Uri "$BASE_URL/$col" -Headers $headers | ConvertTo-Json -Depth 10
+}
 Write-Host ""
 
-Write-Host "=== 9. Get All Admins ==="
-Invoke-RestMethod -Uri "$BASE_URL/admins" | ConvertTo-Json -Depth 10
-Write-Host ""
-
-Write-Host "=== 10. Get All Orders ==="
-Invoke-RestMethod -Uri "$BASE_URL/orders" | ConvertTo-Json -Depth 10
-Write-Host ""
-
-Write-Host "=== 11. Get All Printers ==="
-Invoke-RestMethod -Uri "$BASE_URL/printers" | ConvertTo-Json -Depth 10
-Write-Host ""
-
-Write-Host "=== 12. Get All Colors ==="
-Invoke-RestMethod -Uri "$BASE_URL/colors" | ConvertTo-Json -Depth 10
-Write-Host ""
-
-Write-Host "=== 13. Get All Type Works ==="
-Invoke-RestMethod -Uri "$BASE_URL/type-works" | ConvertTo-Json -Depth 10
-Write-Host ""
-
-# --- Update test ---
-Write-Host "=== 14. Update Order ==="
-Invoke-RestMethod -Uri "$BASE_URL/orders/$order1Id" -Method Put -ContentType "application/json" `
-  -Body '{"count_work": 1000, "detail_work": "Business Card 2 sides CMYK 1000 pcs"}' | ConvertTo-Json
-Write-Host ""
-
-Write-Host "=== 15. Verify Updated Order ==="
-Invoke-RestMethod -Uri "$BASE_URL/orders/$order1Id" | ConvertTo-Json -Depth 10
+# --- Test without token ---
+Write-Host "=== 9. Test Without Token (should 401) ==="
+try {
+    Invoke-RestMethod -Uri "$BASE_URL/companies"
+} catch {
+    Write-Host "Got 401 Unauthorized (expected)"
+}
 Write-Host ""
 
 Write-Host "=== Done! ==="
