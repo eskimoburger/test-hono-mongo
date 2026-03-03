@@ -9,6 +9,8 @@ import orders from "./routes/orders";
 import printers from "./routes/printers";
 import colors from "./routes/colors";
 import typeWorks from "./routes/typeWorks";
+import units from "./routes/units";
+import printTypes from "./routes/printTypes";
 
 const JWT_SECRET = process.env.JWT_SECRET || "five-four-secret";
 
@@ -59,6 +61,10 @@ app.use("/colors/*", jwtMiddleware);
 app.use("/colors", jwtMiddleware);
 app.use("/type-works/*", jwtMiddleware);
 app.use("/type-works", jwtMiddleware);
+app.use("/units/*", jwtMiddleware);
+app.use("/units", jwtMiddleware);
+app.use("/print-types/*", jwtMiddleware);
+app.use("/print-types", jwtMiddleware);
 
 // Protected routes
 app.route("/companies", companies);
@@ -67,6 +73,8 @@ app.route("/orders", orders);
 app.route("/printers", printers);
 app.route("/colors", colors);
 app.route("/type-works", typeWorks);
+app.route("/units", units);
+app.route("/print-types", printTypes);
 
 export default {
   port: 8080,
